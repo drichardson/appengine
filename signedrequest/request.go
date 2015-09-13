@@ -1,4 +1,5 @@
-package signedrequest
+// Package signedrequest provides supports for generating signed HTTP requests
+// with expirations on App Engine.
 
 import (
 	"encoding/base64"
@@ -14,6 +15,9 @@ import (
 	"time"
 )
 
+// A signed request. Method, Url, and Expiration should be set by the user.
+// SignedHeaders is optional. Signature is set by the Sign function. All
+// the fields (except Signature) are signed by the Sign function.
 type SignedRequest struct {
 	Method        string      `json:"method"`
 	Url           string      `json:"url"`
@@ -22,7 +26,8 @@ type SignedRequest struct {
 	Signature     string      `json:"signature"`
 }
 
-// Sign the parameters. This sets the Signature field. c must be an appengine context.
+// Sign signs the request parameters and sets the Signature field.
+// c must be an App Engine context created with appengine.NewContext.
 func (p *SignedRequest) Sign(c context.Context) error {
 	_, sig, err := appengine.SignBytes(c, []byte(p.signingString()))
 	if err != nil {
@@ -32,9 +37,11 @@ func (p *SignedRequest) Sign(c context.Context) error {
 	return nil
 }
 
+// Error code that indicates the request signature has expired.
 var ErrExpired = errors.New("ErrExpired")
 
-// Verify a request is valid. c must be an appengine context.
+// Verify verifies the request signature. c must be an appengine context
+// created with appengine.NewContext.
 func (p *SignedRequest) Verify(c context.Context) error {
 	sig, err := base64.StdEncoding.DecodeString(p.Signature)
 	if err != nil {
@@ -50,6 +57,12 @@ func (p *SignedRequest) Verify(c context.Context) error {
 	return nil
 }
 
+// signingString creates a canonical string out of the SignedRequest
+// suitable for signing (meaning the same string is always produces
+// from the same input). Care must be taken with times with fractional
+// seconds and also headers which are stored in a map, which Go explicially
+// gaurentees will not be iterated through in the same order.
+// See http://golang.org/ref/spec#RangeClause for information on range and map.
 func (p *SignedRequest) signingString() string {
 	// Sort headers by CanonicalHeaderKey to have a consistent sort, even if transformed
 	// by intermediate http proxies.
@@ -73,7 +86,8 @@ func (p *SignedRequest) signingString() string {
 	return strings.Join(components, "\n")
 }
 
-// Create an http.Request from the SignedRequest. Note, the body is not signed.
+// HTTPRequest creates an http.Request from the SignedRequest.
+// The body is not part of the signature.
 func (p *SignedRequest) HTTPRequest(body io.Reader) (*http.Request, error) {
 	r, err := http.NewRequest(p.Method, p.Url, body)
 	if err != nil {
@@ -92,7 +106,8 @@ func (p *SignedRequest) HTTPRequest(body io.Reader) (*http.Request, error) {
 	return r, nil
 }
 
-// Get the SignedRequest from an http.Request created with HTTPRequest.
+// ParseHTTPRequest parses the SignedRequest from an http.Request
+// created with HTTPRequest.
 func ParseHTTPRequest(r *http.Request) (*SignedRequest, error) {
 
 	signature := r.Header.Get("Signature")
