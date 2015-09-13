@@ -23,7 +23,7 @@ type Queue struct {
 	Name string
 }
 
-// Run options.
+// Options contains optional parameters to the Run method.
 type Options struct {
 	// The duration to lease an item from a task queue.
 	LeaseDuration time.Duration
