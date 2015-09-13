@@ -4,8 +4,3 @@ A collection of packages useful when using App Engine. Not all packages are requ
 to be run on App Engine instances. Some are also useful on Compute Engine instances
 that need to communicate with App Engine instances.
 
-## signature
-Verify signatures produced by appengine.SignBytes.
-
-## signedrequest
-Generated signed HTTP request parameters with expirations.
