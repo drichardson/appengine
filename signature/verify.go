@@ -1,3 +1,5 @@
+// Package signature verifies signatures created by the App Engine runtime's
+// appengine.SignBytes function.
 package signature
 
 import (
@@ -15,8 +17,6 @@ var ErrNoPublicCertificates = errors.New("ErrNoPublicCertificates")
 
 // Verify a signature produced by appengine.SignBytes. c must be a context.Context
 // created from appengine.Context.
-// The implementation of this method comes from investigation to answer this question:
-// http://stackoverflow.com/questions/32486427/how-do-you-verify-the-signature-returned-by-appengine-signbytes
 func VerifyBytes(c context.Context, bytes []byte, sig []byte) error {
 	certs, err := appengine.PublicCertificates(c)
 	if err != nil {
