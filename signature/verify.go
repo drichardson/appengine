@@ -11,6 +11,8 @@ import (
 	"google.golang.org/appengine/log"
 )
 
+var ErrNoPublicCertificates = errors.New("ErrNoPublicCertificates")
+
 // Verify a signature produced by appengine.SignBytes. c must be a context.Context
 // created from appengine.Context.
 // The implementation of this method comes from investigation to answer this question:
@@ -22,7 +24,12 @@ func VerifyBytes(c context.Context, bytes []byte, sig []byte) error {
 		return err
 	}
 
-	lastErr := errors.New("ErrNoPublicCertificates")
+	lastErr := ErrNoPublicCertificates
+
+	signBytesHash := crypto.SHA256
+	h := signBytesHash.New()
+	h.Write(bytes)
+	hashed := h.Sum(nil)
 
 	for i, cert := range certs {
 		block, _ := pem.Decode(cert.Data)
@@ -43,10 +50,6 @@ func VerifyBytes(c context.Context, bytes []byte, sig []byte) error {
 			lastErr = errors.New("ErrNotRSAPublicKey")
 			continue
 		}
-		signBytesHash := crypto.SHA256
-		h := signBytesHash.New()
-		h.Write(bytes)
-		hashed := h.Sum(nil)
 		err = rsa.VerifyPKCS1v15(pubkey, signBytesHash, hashed, sig)
 		if err != nil {
 			log.Debugf(c, "Failed to verify signature with key %v named %v", i, cert.KeyName)
