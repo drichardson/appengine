@@ -1,5 +1,6 @@
 // Package signedrequest provides supports for generating signed HTTP requests
 // with expirations on App Engine.
+package signedrequest
 
 import (
 	"encoding/base64"
