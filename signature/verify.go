@@ -10,17 +10,20 @@ import (
 	"errors"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine"
-	"google.golang.org/appengine/log"
 )
 
-var ErrNoPublicCertificates = errors.New("ErrNoPublicCertificates")
+// Error codes returned by verification failures.
+var (
+	ErrNoPublicCertificates = errors.New("ErrNoPublicCertificates")
+	ErrPemDecodeFailure     = errors.New("ErrPemDecodeFailure")
+	ErrNotRSAPublicKey      = errors.New("ErrNotRSAPublicKey")
+)
 
-// Verify a signature produced by appengine.SignBytes. c must be a context.Context
-// created from appengine.Context.
+// VerifyBytes verifies a signature produced by appengine.SignBytes. c must be a
+// context.Context created from appengine.NewContext.
 func VerifyBytes(c context.Context, bytes []byte, sig []byte) error {
 	certs, err := appengine.PublicCertificates(c)
 	if err != nil {
-		log.Errorf(c, "Error getting public certificates. %v", err)
 		return err
 	}
 
@@ -31,28 +34,24 @@ func VerifyBytes(c context.Context, bytes []byte, sig []byte) error {
 	h.Write(bytes)
 	hashed := h.Sum(nil)
 
-	for i, cert := range certs {
+	for _, cert := range certs {
 		block, _ := pem.Decode(cert.Data)
 		if block == nil {
-			log.Errorf(c, "Failed to decode certificate %v", i)
-			lastErr = errors.New("ErrPemDecodeFailure")
+			lastErr = ErrPemDecodeFailure
 			continue
 		}
 		x509Cert, err := x509.ParseCertificate(block.Bytes)
 		if err != nil {
-			log.Errorf(c, "Error parsing x509 certificate. %v", err)
 			lastErr = err
 			continue
 		}
 		pubkey, ok := x509Cert.PublicKey.(*rsa.PublicKey)
 		if !ok {
-			log.Errorf(c, "Type assertion failed to convert public key to rsa.PublicKey")
-			lastErr = errors.New("ErrNotRSAPublicKey")
+			lastErr = ErrNotRSAPublicKey
 			continue
 		}
 		err = rsa.VerifyPKCS1v15(pubkey, signBytesHash, hashed, sig)
 		if err != nil {
-			log.Debugf(c, "Failed to verify signature with key %v named %v", i, cert.KeyName)
 			lastErr = err
 			continue
 		}
