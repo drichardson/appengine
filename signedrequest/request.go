@@ -16,15 +16,16 @@ import (
 	"time"
 )
 
-// A signed request. Method, Url, and Expiration should be set by the user.
-// SignedHeaders is optional. Signature is set by the Sign function. All
+// SignedRequest contains request parameters, an expiration, and signature.
+// Method, URL, and Expiration should be set by the user.
+// Headers are optional. Signature is set by the Sign function. All
 // the fields (except Signature) are signed by the Sign function.
 type SignedRequest struct {
-	Method        string      `json:"method"`
-	Url           string      `json:"url"`
-	Expiration    time.Time   `json:"expiration"`
-	SignedHeaders http.Header `json:"signed_headers"`
-	Signature     string      `json:"signature"`
+	Method     string      `json:"method"`
+	URL        string      `json:"url"`
+	Expiration time.Time   `json:"expiration"`
+	Headers    http.Header `json:"headers"`
+	Signature  string      `json:"signature"`
 }
 
 // Sign signs the request parameters and sets the Signature field.
@@ -67,8 +68,8 @@ func (p *SignedRequest) Verify(c context.Context) error {
 func (p *SignedRequest) signingString() string {
 	// Sort headers by CanonicalHeaderKey to have a consistent sort, even if transformed
 	// by intermediate http proxies.
-	sortedHeaders := make([]string, 0, len(p.SignedHeaders))
-	for k, v := range p.SignedHeaders {
+	sortedHeaders := make([]string, 0, len(p.Headers))
+	for k, v := range p.Headers {
 		sortedHeaders = append(sortedHeaders, http.CanonicalHeaderKey(k)+": "+strings.Join(v, ","))
 	}
 	sort.Strings(sortedHeaders)
@@ -79,7 +80,7 @@ func (p *SignedRequest) signingString() string {
 	// of RFC 3339 time, but we want to treat them all as the same for signing purposes.
 	components := []string{
 		p.Method,
-		p.Url,
+		p.URL,
 		strconv.FormatInt(p.Expiration.Unix(), 10),
 	}
 	components = append(components, sortedHeaders...)
@@ -90,12 +91,12 @@ func (p *SignedRequest) signingString() string {
 // HTTPRequest creates an http.Request from the SignedRequest.
 // The body is not part of the signature.
 func (p *SignedRequest) HTTPRequest(body io.Reader) (*http.Request, error) {
-	r, err := http.NewRequest(p.Method, p.Url, body)
+	r, err := http.NewRequest(p.Method, p.URL, body)
 	if err != nil {
 		return nil, err
 	}
 	signedHeaders := []string{}
-	for k, vals := range p.SignedHeaders {
+	for k, vals := range p.Headers {
 		signedHeaders = append(signedHeaders, k)
 		for _, v := range vals {
 			r.Header.Add(k, v)
@@ -126,11 +127,11 @@ func ParseHTTPRequest(r *http.Request) (*SignedRequest, error) {
 	}
 
 	p := &SignedRequest{
-		Method:        r.Method,
-		Url:           r.URL.String(),
-		Expiration:    expiration,
-		SignedHeaders: signedHeaders,
-		Signature:     signature,
+		Method:     r.Method,
+		URL:        r.URL.String(),
+		Expiration: expiration,
+		Headers:    signedHeaders,
+		Signature:  signature,
 	}
 
 	return p, nil

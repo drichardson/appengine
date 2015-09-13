@@ -15,7 +15,7 @@ func TestSignedRequest(t *testing.T) {
 
 	r := &SignedRequest{
 		Method:     "POST",
-		Url:        "https://howdy",
+		URL:        "https://howdy",
 		Expiration: time.Now().Add(1 * time.Hour),
 	}
 	if err := r.Verify(c); err == nil {
@@ -44,7 +44,7 @@ func TestSignedRequest(t *testing.T) {
 
 	// equality check... though note expiration times may be off by a fraction of a second. The
 	// signature calcualtion, however, is based on the floor of the seconds.
-	if r.Method != r2.Method || r.Url != r2.Url || r.Expiration.Unix() != r2.Expiration.Unix() || r.Signature != r2.Signature {
+	if r.Method != r2.Method || r.URL != r2.URL || r.Expiration.Unix() != r2.Expiration.Unix() || r.Signature != r2.Signature {
 		t.Fatal("r1 != r2")
 	}
 
