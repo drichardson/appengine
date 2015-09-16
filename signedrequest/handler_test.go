@@ -95,3 +95,12 @@ func testRequestFromSignedRequest(inst aetest.Instance, sr *SignedRequest) (*htt
 
 	return req, nil
 }
+
+func ExampleServer() {
+	var handler HandlerFunc = func(w http.ResponseWriter, r *http.Request, sr *SignedRequest) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("signed request handler called"))
+	}
+	http.Handle("/signed", handler)
+	http.ListenAndServe(":8080", nil)
+}
