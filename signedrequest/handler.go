@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-// SignedHandlerFunc is like http.HandlerFunc, but also takes SignedRequest
+// HandlerFunc is like http.HandlerFunc, but also takes SignedRequest
 // as the last parameter. This method is only called by ServeHTTP if the
 // the signature is valid.
 type HandlerFunc func(http.ResponseWriter, *http.Request, *SignedRequest)
@@ -25,7 +25,6 @@ func (f HandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if err == ErrExpired {
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte("Signed URL expired."))
-			return
 		} else {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
