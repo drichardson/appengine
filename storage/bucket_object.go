@@ -21,7 +21,7 @@ type BucketObject struct {
 }
 
 // PublicGetURL returns an HTTPS URL that can reference the given object name in this
-// bucket. Note: this only works if the bucket and/or object is publicly readable.
+// bucket. Note: this only works if the object is publicly readable.
 func (bo *BucketObject) PublicGetURL() string {
 	return "https://storage.googleapis.com/" + bo.Bucket + "/" + url.QueryEscape(bo.Object)
 }
