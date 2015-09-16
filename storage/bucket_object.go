@@ -1,3 +1,4 @@
+// Package storage implements signed URLs for Google Cloud Storage.
 package storage
 
 import (
