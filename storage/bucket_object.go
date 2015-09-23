@@ -75,3 +75,8 @@ func generateSignedURLs(c context.Context, host, resource string, expiry time.Ti
 	}
 	return fmt.Sprintf("%s%s?%s", host, resource, p.Encode()), err
 }
+
+// String returns a gs:// URL that can be used with the gsutil command line tool.
+func (bo *BucketObject) String() string {
+	return "gs://" + bo.Bucket + "/" + bo.Object
+}
