@@ -1,5 +1,5 @@
 // Package googleapiclient implements an http.Client that allow App Engine intances
-// to use the Google API Client library https://github.com/google/google-api-go-client.
+// to use the Google API Client library. For more information, see https://github.com/google/google-api-go-client.
 package googleapiclient
 
 import (
