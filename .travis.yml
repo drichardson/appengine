@@ -4,3 +4,4 @@ go:
     - 1.5
     - tip
 
+install: ./install-dependencies.sh
