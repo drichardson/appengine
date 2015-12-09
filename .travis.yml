@@ -4,4 +4,6 @@ go:
     - 1.5
     - tip
 
-install: ./install-dependencies.sh
+install:
+    - ./install-dependencies.sh
+    - go get -t ./...
