@@ -12,4 +12,5 @@ curl https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz| t
     --usage-reporting true \
     --additional-components app-engine-python \
     --path-update false \
-    --command-completion false
+    --command-completion false \
+    --quiet
