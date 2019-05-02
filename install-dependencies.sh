@@ -10,7 +10,7 @@ curl https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz| t
 # by google.golang.org/appengine/aetest which is used in some of the tests.
 "$HOME/google-cloud-sdk/install.sh" \
     --usage-reporting true \
-    --additional-components app-engine-python \
+    --additional-components app-engine-go \
     --path-update false \
     --command-completion false \
     --quiet
