@@ -39,7 +39,7 @@ func TestSignedRequest(t *testing.T) {
 	}
 
 	if err := r2.Verify(c); err != nil {
-		t.Fatal("r2 failed to verify. %v", err)
+		t.Fatal("r2 failed to verify.", err)
 	}
 
 	// equality check... though note expiration times may be off by a fraction of a second. The
